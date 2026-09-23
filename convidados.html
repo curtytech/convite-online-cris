@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Convidados ✨</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .float-animation { animation: float 3s ease-in-out infinite; }
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-950 via-black to-zinc-900 min-h-screen">
+    <div id="app">
+        <a href="index.html" 
+           class="fixed top-4 left-4 z-50 bg-zinc-800/90 text-amber-300 border border-amber-500/40 px-5 py-2.5 rounded-full font-semibold shadow-lg hover:bg-zinc-700 hover:border-amber-400 transition-all hover:scale-105 flex items-center gap-2 backdrop-blur-sm">
+            <i class="fas fa-arrow-left"></i>
+            <span class="hidden sm:inline">Convite</span>
+        </a>
+
+        <div class="container mx-auto px-4 py-8 max-w-6xl">
+
+            <header class="text-center mb-10 pt-8">
+                <div class="inline-block float-animation mb-4">
+                    <span class="text-6xl md:text-7xl">👑</span>
+                </div>
+                <h1 class="font-playfair text-4xl md:text-6xl font-bold bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-600 bg-clip-text text-transparent mb-3">
+                    Lista de Convidados
+                </h1>
+                <p class="text-amber-200/70 text-lg md:text-xl">
+                    Painel de controle de presenças · Aniversário da Cris
+                </p>
+            </header>
+
+            <section class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10">
+                <div class="bg-zinc-900/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-amber-500/30 shadow-xl">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-gradient-to-br from-amber-400 to-yellow-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/30">
+                            <i class="fas fa-users text-black text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-amber-200/60 text-sm uppercase tracking-wider">Total</p>
+                            <p class="text-3xl font-bold text-amber-300 font-playfair">{{ stats.total }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-900/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-green-500/30 shadow-xl">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-emerald-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-green-500/30">
+                            <i class="fas fa-circle-check text-black text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-green-200/60 text-sm uppercase tracking-wider">Confirmados</p>
+                            <p class="text-3xl font-bold text-green-400 font-playfair">{{ stats.yes }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-900/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-yellow-500/30 shadow-xl">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-yellow-500/30">
+                            <i class="fas fa-circle-question text-black text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-yellow-200/60 text-sm uppercase tracking-wider">Talvez</p>
+                            <p class="text-3xl font-bold text-yellow-400 font-playfair">{{ stats.maybe }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-900/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-red-500/30 shadow-xl">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-gradient-to-br from-red-500 to-rose-700 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-red-500/30">
+                            <i class="fas fa-circle-xmark text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-red-200/60 text-sm uppercase tracking-wider">Não vão</p>
+                            <p class="text-3xl font-bold text-red-400 font-playfair">{{ stats.no }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-zinc-900/80 backdrop-blur-sm rounded-3xl shadow-2xl p-6 md:p-8 mb-10 border-2 border-amber-500/30">
+
+                <div v-if="error" class="mb-6 p-4 rounded-2xl bg-red-950/60 border-2 border-red-500/40 text-red-300 flex items-start gap-3">
+                    <i class="fas fa-triangle-exclamation text-xl mt-0.5"></i>
+                    <div>
+                        <p class="font-semibold">Aviso de conexão</p>
+                        <p class="text-sm text-red-200/80">{{ error }}</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between mb-6">
+                    <div class="relative flex-1 max-w-md">
+                        <i class="fas fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-amber-400 text-lg"></i>
+                        <input v-model="search" type="text" placeholder="Buscar por nome ou telefone..."
+                               class="w-full pl-12 pr-5 py-3.5 bg-zinc-800 text-white border-2 border-zinc-700 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none transition-all placeholder-gray-500">
+                    </div>
+
+                    <div class="flex gap-2 flex-wrap">
+                        <button v-for="f in filters" :key="f.value" @click="activeFilter = f.value"
+                                :class="['px-5 py-2.5 rounded-xl font-semibold transition-all border-2 flex items-center gap-2',
+                                    activeFilter === f.value
+                                        ? f.activeClass
+                                        : 'bg-zinc-800 text-gray-300 border-zinc-700 hover:border-amber-500/40']">
+                            <i :class="f.icon"></i>
+                            <span>{{ f.label }}</span>
+                            <span v-if="f.count !== undefined"
+                                  :class="['ml-1 px-2 py-0.5 rounded-full text-xs', activeFilter === f.value ? 'bg-black/30' : 'bg-zinc-700']">
+                                {{ f.count }}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between pt-4 border-t border-zinc-800">
+                    <div class="flex flex-wrap items-center gap-3 text-sm">
+                        <div v-if="loading" class="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-amber-500/10 text-amber-300 border-amber-500/40">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span class="font-semibold">Sincronizando com JSONBin...</span>
+                        </div>
+                        <div v-else-if="error || !configured"
+                             class="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-red-500/10 text-red-400 border-red-500/40">
+                            <i class="fas fa-triangle-exclamation"></i>
+                            <span class="font-semibold">{{ configured ? 'Erro de conexão' : 'Bin não configurado' }}</span>
+                        </div>
+                        <div v-else class="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-green-500/10 text-green-400 border-green-500/40">
+                            <i class="fas fa-cloud-check"></i>
+                            <span class="font-semibold">Sincronizado com JSONBin ✅</span>
+                        </div>
+                    </div>
+                    <p class="text-amber-200/60 text-sm">
+                        Exibindo <span class="text-amber-300 font-semibold">{{ filteredRsvps.length }}</span> de
+                        <span class="text-amber-300 font-semibold">{{ rsvps.length }}</span> convidados
+                    </p>
+                    <div class="flex gap-2 flex-wrap">
+                        <button @click="refreshData" :disabled="loading"
+                                class="px-5 py-2.5 bg-zinc-800 text-amber-300 border-2 border-amber-500/40 rounded-xl font-semibold hover:bg-amber-500/10 hover:border-amber-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                            <i :class="loading ? 'fas fa-spinner fa-spin' : 'fas fa-arrows-rotate'"></i>
+                            Atualizar
+                        </button>
+                        <button @click="exportJSON"
+                                class="px-5 py-2.5 bg-zinc-800 text-amber-300 border-2 border-amber-500/40 rounded-xl font-semibold hover:bg-amber-500/10 hover:border-amber-400 transition-all flex items-center gap-2">
+                            <i class="fas fa-file-code"></i>
+                            Exportar JSON
+                        </button>
+                        <button @click="exportCSV"
+                                class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-600 text-black rounded-xl font-bold hover:shadow-xl hover:shadow-amber-500/40 transition-all hover:scale-105 flex items-center gap-2">
+                            <i class="fas fa-file-csv"></i>
+                            Exportar CSV
+                        </button>
+                        <button @click="clearAll"
+                                class="px-5 py-2.5 bg-red-950/60 text-red-400 border-2 border-red-500/30 rounded-xl font-semibold hover:bg-red-900/40 hover:border-red-500 transition-all flex items-center gap-2">
+                            <i class="fas fa-trash"></i>
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section v-if="filteredRsvps.length > 0" class="space-y-4 mb-10">
+                <div v-for="guest in filteredRsvps" :key="guest.id"
+                     class="bg-zinc-900/80 backdrop-blur-sm rounded-2xl shadow-xl p-5 md:p-6 border-2 border-zinc-800 hover:border-amber-500/40 transition-all group">
+                    <div class="flex flex-col md:flex-row gap-5 items-start md:items-center">
+                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/20">
+                            <span class="font-playfair text-black font-bold text-2xl">
+                                {{ guest.name.charAt(0).toUpperCase() }}
+                            </span>
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-wrap items-center gap-3 mb-2">
+                                <h3 class="font-bold text-xl text-amber-200 truncate">{{ guest.name }}</h3>
+                                <span :class="statusBadge(guest.attending, guest._presencaRaw).class">
+                                    <i :class="statusBadge(guest.attending, guest._presencaRaw).icon" class="mr-1.5"></i>
+                                    {{ statusBadge(guest.attending, guest._presencaRaw).label }}
+                                </span>
+                            </div>
+                            <div class="flex flex-wrap gap-x-6 gap-y-1.5 text-sm text-gray-400">
+                                <a :href="'tel:' + guest.phone" class="flex items-center gap-2 hover:text-amber-300 transition-colors">
+                                    <i class="fas fa-phone text-amber-400/70"></i>
+                                    {{ guest.phone }}
+                                </a>
+                                <span class="flex items-center gap-2">
+                                    <i class="fas fa-calendar text-amber-400/70"></i>
+                                    {{ formatDate(guest.createdAt) }}
+                                </span>
+                            </div>
+                            <p v-if="guest.message" class="mt-3 text-gray-300 italic bg-zinc-800/60 rounded-xl px-4 py-3 border-l-4 border-amber-500/60">
+                                <i class="fas fa-quote-left text-amber-400/50 mr-2 text-xs"></i>
+                                {{ guest.message }}
+                            </p>
+                        </div>
+
+                        <div class="flex gap-2 self-center md:self-start">
+                            <button @click="deleteRsvp(guest.id)"
+                                    class="w-11 h-11 rounded-xl bg-zinc-800 text-red-400 border border-zinc-700 hover:bg-red-950/60 hover:border-red-500/50 hover:text-red-300 transition-all flex items-center justify-center group/btn"
+                                    title="Remover convidado">
+                                <i class="fas fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div v-else class="bg-zinc-900/60 rounded-3xl border-2 border-dashed border-zinc-700 p-16 text-center mb-10">
+                <div class="text-6xl mb-4 opacity-50">📭</div>
+                <h3 class="font-playfair text-2xl font-bold text-amber-300 mb-2">Nenhum convidado encontrado</h3>
+                <p class="text-amber-200/60">
+                    {{ search || activeFilter !== 'all' ? 'Tente ajustar os filtros de busca.' : 'Volte quando tiver confirmações de presença!' }}
+                </p>
+            </div>
+
+            <footer class="text-center py-8 text-amber-200/40 border-t border-zinc-800/60">
+                <p class="font-playfair text-2xl text-amber-200/70 mb-2">Aniversário da Cris ✨</p>
+                <p class="text-sm">Made with <i class="fas fa-heart text-amber-500"></i> · Dados sincronizados via JSONBin.io</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const JSONBIN_MASTER_KEY = '$2a$10$jgvkvOS.3BLaRtRrL9f59.0L9wsb880DPE4VsekjqwitSV2sW4HCS';
+                const JSONBIN_BIN_ID = ''; // O ID do seu Bin (ex: 652abc123e234...)
+
+                const rsvps = ref([]);
+                const search = ref('');
+                const activeFilter = ref('all');
+                const loading = ref(false);
+                const error = ref('');
+                const configured = ref(true);
+
+                const JSONBIN_HEADERS = () => ({
+                    'X-Master-Key': JSONBIN_MASTER_KEY,
+                    'Content-Type': 'application/json',
+                    'X-Bin-Private': 'false'
+                });
+
+                const mapRowToLocal = (row, idx) => {
+                    const presencaRaw = (row.PresencaRaw || row.Presenca || row.presenca || '').toString().trim();
+                    const lower = presencaRaw.toLowerCase();
+                    let attending = 'maybe';
+                    if (/yes|sim|confirm|confirmado|vai|vou|presente|✅|sim\b|1\b/.test(lower)) attending = 'yes';
+                    else if (/no|não|nao|ausente|❌|não posso|nao posso|não vai|nao vai|0\b/.test(lower)) attending = 'no';
+                    else if (/talvez|talvez\b|❓|\?/.test(lower)) attending = 'maybe';
+                    else if (presencaRaw === '') attending = 'maybe';
+                    const createdRaw = row.DataISO || row.Data || row.data || row.createdAt || '';
+                    let parsedDate;
+                    if (createdRaw) {
+                        if (/^\d{4}-\d{2}-\d{2}T/.test(createdRaw)) {
+                            parsedDate = new Date(createdRaw);
+                        } else {
+                            const brMatch = createdRaw.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                            if (brMatch) {
+                                const timeMatch = createdRaw.match(/(\d{1,2}):(\d{2})/);
+                                const iso = `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}T${timeMatch ? `${timeMatch[1]}:${timeMatch[2]}:00` : '00:00:00'}`;
+                                parsedDate = new Date(iso);
+                            } else {
+                                parsedDate = new Date(createdRaw);
+                            }
+                        }
+                    } else {
+                        parsedDate = new Date();
+                    }
+                    return {
+                        id: row.id || row.ID || `bin-${idx}-${Date.now()}-${Math.random()}`,
+                        name: (row.Nome || row.nome || '(sem nome)').toString().trim(),
+                        phone: (row.Telefone || row.telefone || '').toString().trim(),
+                        attending,
+                        message: (row.Mensagem || row.mensagem || '').toString().trim(),
+                        createdAt: isNaN(parsedDate.getTime()) ? new Date().toISOString() : parsedDate.toISOString(),
+                        _raw: row,
+                        _presencaRaw: (row.Presenca || '').toString().trim()
+                    };
+                };
+
+                const readBin = async (binId) => {
+                    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                        method: 'GET',
+                        headers: JSONBIN_HEADERS()
+                    });
+                    if (!res.ok) throw new Error(`HTTP ${res.status} — verifique o ID do Bin e as permissões.`);
+                    const json = await res.json();
+                    return json.record || { rsvps: [] };
+                };
+
+                const updateBin = async (binId, data) => {
+                    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                        method: 'PUT',
+                        headers: JSONBIN_HEADERS(),
+                        body: JSON.stringify(data)
+                    });
+                    if (!res.ok) throw new Error(`HTTP ${res.status} ao atualizar.`);
+                    return await res.json();
+                };
+
+                const loadRsvpsJsonBin = async () => {
+                    if (!JSONBIN_MASTER_KEY) {
+                        configured.value = false;
+                        error.value = 'Chave mestra do JSONBin não configurada.';
+                        rsvps.value = [];
+                        return;
+                    }
+                    if (!JSONBIN_BIN_ID) {
+                        configured.value = false;
+                        error.value = 'JSONBIN_BIN_ID vazio. Envie o primeiro RSVP pelo site para criar o Bin automaticamente, depois copie o ID aqui.';
+                        rsvps.value = [];
+                        console.log('%c⚠️ JSONBIN_BIN_ID vazio.',
+                            'background:#f59e0b;color:#000;font-size:14px;padding:6px 10px;border-radius:6px;');
+                        console.log('Passos: 1) Abra index.html → envie um RSVP teste. 2) Abra F12 Console → copie o ID do Bin criado. 3) Cole o ID em JSONBIN_BIN_ID aqui em convidados.html e também em index.html.');
+                        return;
+                    }
+                    configured.value = true;
+                    loading.value = true;
+                    error.value = '';
+                    try {
+                        const record = await readBin(JSONBIN_BIN_ID);
+                        const list = Array.isArray(record.rsvps) ? record.rsvps : [];
+                        rsvps.value = list.map(mapRowToLocal);
+                    } catch (err) {
+                        console.error('[JSONBin] Erro ao carregar:', err);
+                        error.value = err.message || 'Falha na conexão com JSONBin.io.';
+                        rsvps.value = [];
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                const saveBackRsvps = async (listRaw) => {
+                    if (!JSONBIN_BIN_ID) throw new Error('Bin ID não configurado.');
+                    await updateBin(JSONBIN_BIN_ID, { rsvps: listRaw });
+                };
+
+                const refreshData = () => loadRsvpsJsonBin();
+
+                const stats = computed(() => ({
+                    total: rsvps.value.length,
+                    yes: rsvps.value.filter(r => r.attending === 'yes').length,
+                    maybe: rsvps.value.filter(r => r.attending === 'maybe').length,
+                    no: rsvps.value.filter(r => r.attending === 'no').length
+                }));
+
+                const filters = computed(() => ([
+                    { value: 'all', label: 'Todos', icon: 'fas fa-list', count: stats.value.total,
+                      activeClass: 'bg-gradient-to-r from-amber-500 to-yellow-600 text-black border-amber-400 shadow-lg shadow-amber-500/30' },
+                    { value: 'yes', label: 'Vão', icon: 'fas fa-circle-check', count: stats.value.yes,
+                      activeClass: 'bg-gradient-to-br from-green-500 to-emerald-600 text-white border-green-400 shadow-lg shadow-green-500/30' },
+                    { value: 'maybe', label: 'Talvez', icon: 'fas fa-circle-question', count: stats.value.maybe,
+                      activeClass: 'bg-gradient-to-br from-yellow-500 to-amber-600 text-black border-yellow-400 shadow-lg shadow-yellow-500/30' },
+                    { value: 'no', label: 'Não vão', icon: 'fas fa-circle-xmark', count: stats.value.no,
+                      activeClass: 'bg-gradient-to-br from-red-600 to-rose-700 text-white border-red-500 shadow-lg shadow-red-500/30' }
+                ]));
+
+                const filteredRsvps = computed(() => {
+                    let result = [...rsvps.value];
+                    if (activeFilter.value !== 'all') {
+                        result = result.filter(r => r.attending === activeFilter.value);
+                    }
+                    if (search.value.trim()) {
+                        const q = search.value.toLowerCase().trim();
+                        result = result.filter(r =>
+                            (r.name || '').toLowerCase().includes(q) ||
+                            (r.phone || '').includes(q)
+                        );
+                    }
+                    return result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                });
+
+                const statusBadge = (status, raw) => {
+                    const baseClass = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border';
+                    const map = {
+                        yes:   { label: raw && raw.toLowerCase() !== 'confirmado' && raw ? raw : 'Confirmado',  icon: 'fas fa-circle-check',  class: `${baseClass} bg-green-500/20 text-green-400 border-green-500/40` },
+                        no:    { label: raw && /não|nao/.test(raw.toLowerCase()) ? raw : 'Não vai',     icon: 'fas fa-circle-xmark',  class: `${baseClass} bg-red-500/20 text-red-400 border-red-500/40` },
+                        maybe: { label: raw ? raw : 'Talvez',      icon: 'fas fa-circle-question', class: `${baseClass} bg-yellow-500/20 text-yellow-400 border-yellow-500/40` }
+                    };
+                    return map[status] || { ...map.maybe, label: raw || status };
+                };
+
+                const formatDate = (iso) => {
+                    try {
+                        const d = new Date(iso);
+                        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    } catch (e) { return iso; }
+                };
+
+                const deleteRsvp = async (guest) => {
+                    if (!confirm('Deseja realmente remover este convidado do JSONBin?')) return;
+                    loading.value = true;
+                    try {
+                        const record = await readBin(JSONBIN_BIN_ID);
+                        const list = Array.isArray(record.rsvps) ? record.rsvps : [];
+                        const filtered = list.filter(r => String(r.id) !== String(guest.id) && r.Nome !== guest.name);
+                        await saveBackRsvps(filtered);
+                        await loadRsvpsJsonBin();
+                    } catch (err) {
+                        console.error(err);
+                        error.value = err.message || 'Falha ao remover convidado.';
+                        loading.value = false;
+                    }
+                };
+
+                const clearAll = async () => {
+                    if (!confirm('Deseja APAGAR TODAS as confirmações do JSONBin? Esta ação NÃO pode ser desfeita!')) return;
+                    if (!confirm('Tem CERTEZA ABSOLUTA? Todos os RSVPs serão perdidos!')) return;
+                    loading.value = true;
+                    try {
+                        await saveBackRsvps([]);
+                        await loadRsvpsJsonBin();
+                    } catch (err) {
+                        console.error(err);
+                        error.value = err.message || 'Falha ao limpar dados.';
+                        loading.value = false;
+                    }
+                };
+
+                const exportJSON = () => {
+                    const data = JSON.stringify(filteredRsvps.value, null, 2);
+                    const blob = new Blob([data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `convidados-${new Date().toISOString().slice(0,10)}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                };
+
+                const exportCSV = () => {
+                    const headers = ['ID', 'Nome', 'Telefone', 'Presença', 'Mensagem', 'Data de Confirmação'];
+                    const rows = filteredRsvps.value.map(r => [
+                        r.id,
+                        `"${(r.name || '').replace(/"/g, '""')}"`,
+                        r.phone || '',
+                        r._presencaRaw ? `"${r._presencaRaw.replace(/"/g, '""')}"` : ({yes:'Confirmado', no:'Não vai', maybe:'Talvez'})[r.attending] || r.attending,
+                        `"${(r.message || '').replace(/"/g, '""')}"`,
+                        formatDate(r.createdAt)
+                    ]);
+                    const csv = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
+                    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `convidados-${new Date().toISOString().slice(0,10)}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                };
+
+                onMounted(() => loadRsvpsJsonBin());
+
+                return {
+                    rsvps,
+                    search,
+                    activeFilter,
+                    loading,
+                    error,
+                    configured,
+                    stats,
+                    filters,
+                    filteredRsvps,
+                    statusBadge,
+                    formatDate,
+                    deleteRsvp,
+                    clearAll,
+                    exportJSON,
+                    exportCSV,
+                    refreshData
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convite de Aniversário 🎉</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .font-playfair {
+            font-family: 'Playfair Display', serif;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
+            50% { box-shadow: 0 0 50px rgba(212, 175, 55, 0.8); }
+        }
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        .pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            animation: confetti-fall linear forwards;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.5s ease;
+        }
+        .fade-enter-from, .fade-leave-to {
+            opacity: 0;
+        }
+        .slide-up-enter-active, .slide-up-leave-active {
+            transition: all 0.6s ease;
+        }
+        .slide-up-enter-from, .slide-up-leave-to {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        .gold-gradient {
+            background: linear-gradient(135deg, #F7E7CE 0%, #D4AF37 25%, #FFD700 50%, #B8860B 75%, #D4AF37 100%);
+        }
+        .gold-border {
+            border-image: linear-gradient(135deg, #D4AF37, #FFD700, #B8860B, #D4AF37) 1;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-950 via-black to-zinc-900 min-h-screen">
+    <div id="app">
+        <div v-for="(c, i) in confetti" :key="i" 
+             class="confetti"
+             :style="{
+                 left: c.left + '%',
+                 backgroundColor: c.color,
+                 animationDuration: c.duration + 's',
+                 animationDelay: c.delay + 's',
+                 borderRadius: Math.random() > 0.5 ? '50%' : '0%'
+             }"></div>
+
+        <a href="convidados.html" 
+           class="fixed top-4 right-4 z-50 bg-gradient-to-r from-amber-500 to-yellow-600 text-black px-5 py-2.5 rounded-full font-bold shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/50 transition-all hover:scale-105 flex items-center gap-2">
+            <i class="fas fa-users"></i>
+            <span class="hidden sm:inline">Convidados</span>
+        </a>
+
+        <div class="container mx-auto px-4 py-8 max-w-4xl relative z-10">
+            
+            <section class="text-center mb-12 slide-up">
+                <div class="inline-block float-animation mb-6">
+                    <!-- <span class="text-7xl md:text-8xl drop-shadow-lg">🎂</span> -->
+                </div>
+                <h1 class="font-playfair text-5xl md:text-7xl font-bold bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-600 bg-clip-text text-transparent mb-4 drop-shadow-sm">
+                    Feliz Aniversário!
+                </h1>
+                <p class="text-2xl md:text-3xl text-amber-100 font-playfair mb-2">
+                    Você está convidado(a) para celebrar comigo
+                </p>
+                <div class="flex items-center justify-center gap-2 text-amber-300/70">
+                    <i class="fas fa-star text-amber-400"></i>
+                    <span class="text-lg">Um momento especial feito para você</span>
+                    <i class="fas fa-star text-amber-400"></i>
+                </div>
+            </section>
+
+            <section class="bg-zinc-900/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-12 border-2 border-amber-500/30 slide-up">
+                <h2 class="font-playfair text-3xl md:text-4xl font-bold text-center text-amber-400 mb-8">
+                    <i class="fas fa-gift text-amber-400 mr-2"></i>
+                    Contagem Regressiva
+                </h2>
+                <div class="grid grid-cols-4 gap-3 md:gap-6">
+                    <div class="bg-gradient-to-br from-zinc-800 to-black rounded-2xl p-4 md:p-6 text-center border border-amber-500/40 shadow-xl">
+                        <div class="text-4xl md:text-6xl font-bold font-playfair bg-gradient-to-b from-yellow-300 to-amber-500 bg-clip-text text-transparent">{{ countdown.days }}</div>
+                        <div class="text-xs md:text-sm mt-2 text-amber-200/80 uppercase tracking-wider">Dias</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-zinc-800 to-black rounded-2xl p-4 md:p-6 text-center border border-amber-500/40 shadow-xl">
+                        <div class="text-4xl md:text-6xl font-bold font-playfair bg-gradient-to-b from-yellow-300 to-amber-500 bg-clip-text text-transparent">{{ countdown.hours }}</div>
+                        <div class="text-xs md:text-sm mt-2 text-amber-200/80 uppercase tracking-wider">Horas</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-zinc-800 to-black rounded-2xl p-4 md:p-6 text-center border border-amber-500/40 shadow-xl">
+                        <div class="text-4xl md:text-6xl font-bold font-playfair bg-gradient-to-b from-yellow-300 to-amber-500 bg-clip-text text-transparent">{{ countdown.minutes }}</div>
+                        <div class="text-xs md:text-sm mt-2 text-amber-200/80 uppercase tracking-wider">Min</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-zinc-800 to-black rounded-2xl p-4 md:p-6 text-center border border-amber-500/40 shadow-xl">
+                        <div class="text-4xl md:text-6xl font-bold font-playfair bg-gradient-to-b from-yellow-300 to-amber-500 bg-clip-text text-transparent">{{ countdown.seconds }}</div>
+                        <div class="text-xs md:text-sm mt-2 text-amber-200/80 uppercase tracking-wider">Seg</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-zinc-900/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-12 border-2 border-amber-500/30 slide-up">
+                <h2 class="font-playfair text-3xl md:text-4xl font-bold text-center text-amber-400 mb-10">
+                    <i class="fas fa-map-marker-alt text-amber-400 mr-2"></i>
+                    Informações do Evento
+                </h2>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="flex items-start gap-4 p-6 bg-gradient-to-r from-zinc-800/80 to-zinc-900/80 rounded-2xl border border-amber-500/20">
+                        <div class="bg-gradient-to-br from-amber-400 to-yellow-600 text-black w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/30">
+                            <i class="fas fa-calendar-day text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-amber-300 mb-1">Data</h3>
+                            <p class="text-gray-300 text-lg">Sábado, 24 de Outubro</p>
+                            <p class="text-amber-400 font-semibold">de 2026</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-6 bg-gradient-to-r from-zinc-800/80 to-zinc-900/80 rounded-2xl border border-amber-500/20">
+                        <div class="bg-gradient-to-br from-amber-400 to-yellow-600 text-black w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/30">
+                            <i class="fas fa-clock text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-amber-300 mb-1">Horário</h3>
+                            <p class="text-gray-300 text-lg">A partir das 20:00</p>
+                            <p class="text-amber-400 font-semibold">Não se atrase!</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-6 bg-gradient-to-r from-zinc-800/80 to-zinc-900/80 rounded-2xl md:col-span-2 border border-amber-500/20">
+                        <div class="bg-gradient-to-br from-amber-400 to-yellow-600 text-black w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/30">
+                            <i class="fas fa-location-dot text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-amber-300 mb-1">Local</h3>
+                            <p class="text-gray-400">Rua Manoel Botelho do Rego, 255 - Bairro Barbuda</p>
+                            <p class="text-gray-300 text-lg">4ª rua do lado direito da principal</p>
+                            <button @click="openMaps" class="mt-2 inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 font-semibold transition-colors">
+                                <i class="fas fa-directions"></i>
+                                Abrir no Google Maps
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-6 bg-gradient-to-r from-zinc-800/80 to-zinc-900/80 rounded-2xl md:col-span-2 border border-amber-500/20">
+                        <div class="bg-gradient-to-br from-amber-400 to-yellow-600 text-black w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/30">
+                            <i class="fas fa-shirt text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-amber-300 mb-1">Traje</h3>
+                            <p class="text-gray-300 text-lg">Country</p>
+                            <p class="text-gray-300 font-semibold">Chapeu, bota, short ou calça</p>
+                            <p class="text-gray-300 ">O uso do chapé é obrigatório</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-zinc-900/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-12 border-2 border-amber-500/30 slide-up">
+                <h2 class="font-playfair text-3xl md:text-4xl font-bold text-center text-amber-400 mb-10">
+                    <i class="fas fa-images text-amber-400 mr-2"></i>
+                    Momentos Especiais
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div v-for="(img, idx) in gallery" :key="idx"
+                         class="relative group overflow-hidden rounded-2xl aspect-square cursor-pointer shadow-xl border border-amber-500/20"
+                         @click="openLightbox(idx)">
+                        <img :src="img.src" :alt="img.alt"
+                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                            <span class="text-amber-200 font-medium">{{ img.alt }}</span>
+                        </div>
+                        <div class="absolute top-3 right-3 bg-black/80 border border-amber-400/60 rounded-full w-10 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i class="fas fa-search-plus text-amber-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-zinc-900/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-12 border-2 border-amber-500/30 slide-up">
+                <h2 class="font-playfair text-3xl md:text-4xl font-bold text-center text-amber-400 mb-4">
+                    <i class="fas fa-envelope text-amber-400 mr-2"></i>
+                    Confirme sua Presença
+                </h2>
+                <p class="text-center text-amber-200/60 mb-10">Sua presença é o presente mais especial! 🎁</p>
+
+                <form v-if="!submitted" @submit.prevent="submitRsvp" class="max-w-lg mx-auto space-y-6">
+                    <div>
+                        <label class="block text-amber-200 font-semibold mb-2">
+                            <i class="fas fa-user text-amber-400 mr-2"></i>Seu Nome
+                        </label>
+                        <input v-model="rsvp.name" type="text" required
+                               class="w-full px-5 py-4 bg-zinc-800/80 text-white border-2 border-zinc-700 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none transition-all text-lg placeholder-gray-500"
+                               placeholder="Digite seu nome completo">
+                    </div>
+
+                    <div>
+                        <label class="block text-amber-200 font-semibold mb-2">
+                            <i class="fas fa-whatsapp text-green-500 mr-2"></i>WhatsApp
+                        </label>
+                        <input v-model="rsvp.phone" type="tel" required
+                               class="w-full px-5 py-4 bg-zinc-800/80 text-white border-2 border-zinc-700 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none transition-all text-lg placeholder-gray-500"
+                               placeholder="(11) 99999-9999">
+                    </div>
+
+                    <div>
+                        <label class="block text-amber-200 font-semibold mb-3">
+                            <i class="fas fa-circle-check text-amber-400 mr-2"></i>Você vai comparecer?
+                        </label>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button type="button" @click="rsvp.attending = 'yes'"
+                                    :class="['py-4 rounded-xl font-semibold transition-all border-2',
+                                        rsvp.attending === 'yes'
+                                            ? 'bg-gradient-to-br from-amber-500 to-yellow-600 text-black border-amber-400 shadow-lg shadow-amber-500/40 scale-105'
+                                            : 'bg-zinc-800 text-gray-300 border-zinc-700 hover:border-amber-500/50']">
+                                <i class="fas fa-check mr-1"></i> Sim
+                            </button>
+                            <button type="button" @click="rsvp.attending = 'no'"
+                                    :class="['py-4 rounded-xl font-semibold transition-all border-2',
+                                        rsvp.attending === 'no'
+                                            ? 'bg-gradient-to-br from-red-700 to-red-900 text-white border-red-500 shadow-lg shadow-red-500/30 scale-105'
+                                            : 'bg-zinc-800 text-gray-300 border-zinc-700 hover:border-red-500/50']">
+                                <i class="fas fa-xmark mr-1"></i> Não
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-amber-200 font-semibold mb-2">
+                            <i class="fas fa-message text-amber-400 mr-2"></i>Mensagem (opcional)
+                        </label>
+                        <textarea v-model="rsvp.message" rows="3"
+                                  class="w-full px-5 py-4 bg-zinc-800/80 text-white border-2 border-zinc-700 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none transition-all resize-none text-lg placeholder-gray-500"
+                                  placeholder="Deixe uma mensagem carinhosa..."></textarea>
+                    </div>
+
+                    <div v-if="submitError"
+                         class="p-4 rounded-2xl bg-red-950/60 border-2 border-red-500/40 text-red-300 flex items-start gap-3">
+                        <i class="fas fa-circle-exclamation text-xl mt-0.5"></i>
+                        <div>
+                            <p class="font-semibold">Ops! Não foi possível enviar</p>
+                            <p class="text-sm text-red-200/80">{{ submitError }}</p>
+                        </div>
+                    </div>
+
+                    <button type="submit" :disabled="submitting"
+                            :class="['w-full py-5 font-bold text-xl rounded-2xl transition-all duration-300 flex items-center justify-center gap-3',
+                                submitting
+                                    ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 text-black shadow-xl shadow-amber-500/30 hover:shadow-2xl hover:shadow-amber-500/50 transform hover:-translate-y-1 pulse-glow']">
+                        <i :class="submitting ? 'fas fa-spinner fa-spin' : 'fas fa-paper-plane'"></i>
+                        {{ submitting ? 'Enviando...' : 'Enviar Confirmação' }}
+                    </button>
+                </form>
+
+                <div v-else class="text-center py-10">
+                    <div class="inline-block mb-6">
+                        <div class="w-24 h-24 bg-gradient-to-br from-amber-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto shadow-xl shadow-amber-500/40">
+                            <i class="fas fa-check text-black text-5xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-playfair text-3xl font-bold text-amber-400 mb-3">Obrigada! ✨</h3>
+                    <p class="text-gray-300 text-lg mb-8">
+                        {{ rsvp.attending === 'yes' ? 'Mal posso esperar para comemorar com você!' :
+                           rsvp.attending === 'no' ? 'Sinto sua falta, mas obrigada por avisar!' :
+                           'Espero que você possa comparecer!' }}
+                    </p>
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <button @click="resetRsvp"
+                                class="px-8 py-3 border-2 border-amber-500 text-amber-400 font-semibold rounded-xl hover:bg-amber-500/10 transition-all">
+                            <i class="fas fa-rotate-left mr-2"></i>Enviar outra resposta
+                        </button>
+                        <a href="convidados.html"
+                           class="px-8 py-3 bg-gradient-to-r from-amber-500 to-yellow-600 text-black font-bold rounded-xl hover:shadow-xl hover:shadow-amber-500/40 transition-all hover:scale-105">
+                            <i class="fas fa-users mr-2"></i>Ver lista de convidados
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- <section class="bg-gradient-to-r from-amber-900/40 via-yellow-900/30 to-amber-900/40 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-12 border-2 border-amber-500/40 slide-up">
+                <div class="text-center">
+                    <h2 class="font-playfair text-3xl md:text-4xl font-bold mb-6 text-amber-300">
+                        <i class="fas fa-gift mr-2"></i>
+                        Lista de Presentes
+                    </h2>
+                    <p class="text-amber-100/80 text-lg mb-8 max-w-2xl mx-auto">
+                        Sua presença já é o melhor presente! Mas se quiser me surpreender, 
+                        confira algumas sugestões ou contribua com o meu "Festa dos Sonhos" 🌟
+                    </p>
+                    <div class="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                        <button class="bg-black/40 backdrop-blur-sm hover:bg-black/60 border-2 border-amber-400/60 text-amber-200 font-semibold py-4 px-6 rounded-2xl transition-all hover:scale-105 hover:border-amber-400">
+                            <i class="fas fa-store text-2xl mr-3 text-amber-400"></i>
+                            Ver Lista de Presentes
+                        </button>
+                        <button class="bg-gradient-to-r from-yellow-400 to-amber-500 text-black hover:from-yellow-300 hover:to-amber-400 font-bold py-4 px-6 rounded-2xl transition-all hover:scale-105 shadow-xl shadow-amber-500/30">
+                            <i class="fas fa-heart text-2xl mr-3"></i>
+                            Pix Surpresa
+                        </button>
+                    </div>
+                </div>
+            </section> -->
+
+            <footer class="text-center py-10 text-amber-200/50 slide-up">
+                <div class="flex justify-center gap-3 mb-6">
+                    <span class="text-4xl float-animation" style="animation-delay: 0s">🎈</span>
+                    <span class="text-4xl float-animation" style="animation-delay: 0.3s">🎉</span>
+                    <span class="text-4xl float-animation" style="animation-delay: 0.6s">🎊</span>
+                    <span class="text-4xl float-animation" style="animation-delay: 0.9s">🎁</span>
+                    <span class="text-4xl float-animation" style="animation-delay: 1.2s">🎈</span>
+                </div>
+                <p class="font-playfair text-2xl text-amber-200/80 mb-3">Com carinho,</p>
+                <p class="font-playfair text-4xl font-bold bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-600 bg-clip-text text-transparent">
+                    Cris ✨
+                </p>
+                
+            </footer>
+        </div>
+
+        <transition name="fade">
+            <div v-if="lightboxOpen" 
+                 class="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
+                 @click.self="closeLightbox">
+                <button @click="closeLightbox" 
+                        class="absolute top-6 right-6 text-amber-300 text-4xl hover:text-amber-500 transition-colors">
+                    <i class="fas fa-xmark"></i>
+                </button>
+                <button v-if="lightboxIndex > 0" 
+                        @click="prevImage"
+                        class="absolute left-6 text-amber-300 text-4xl hover:text-amber-500 transition-colors">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <img :src="gallery[lightboxIndex].src" 
+                     :alt="gallery[lightboxIndex].alt"
+                     class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl object-contain border-2 border-amber-500/40">
+                <button v-if="lightboxIndex < gallery.length - 1" 
+                        @click="nextImage"
+                        class="absolute right-6 text-amber-300 text-4xl hover:text-amber-500 transition-colors">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </transition>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+
+        createApp({
+            setup() {
+                const eventDate = new Date('2026-10-24T20:00:00');
+                
+                const countdown = ref({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+                let countdownInterval = null;
+
+                const updateCountdown = () => {
+                    const now = new Date().getTime();
+                    const distance = eventDate.getTime() - now;
+                    
+                    if (distance > 0) {
+                        countdown.value.days = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
+                        countdown.value.hours = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+                        countdown.value.minutes = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                        countdown.value.seconds = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+                    }
+                };
+
+                const confetti = ref([]);
+                const colors = ['#D4AF37', '#FFD700', '#B8860B', '#F4C430', '#DA9100', '#8B7500', '#CD950C', '#FFFFFF'];
+                
+                const createConfetti = () => {
+                    for (let i = 0; i < 50; i++) {
+                        confetti.value.push({
+                            left: Math.random() * 100,
+                            color: colors[Math.floor(Math.random() * colors.length)],
+                            duration: 3 + Math.random() * 4,
+                            delay: Math.random() * 5
+                        });
+                    }
+                };
+
+                const gallery = ref([
+                    { src: '1.jpeg', alt: 'Momentos felizes' },
+                    { src: '3.jpeg', alt: 'Risadas' },
+                    { src: '2.jpeg', alt: 'Comemorações' },
+                    { src: '4.jpeg', alt: 'Alegria' }
+                ]);
+
+                const lightboxOpen = ref(false);
+                const lightboxIndex = ref(0);
+
+                const openLightbox = (idx) => {
+                    lightboxIndex.value = idx;
+                    lightboxOpen.value = true;
+                    document.body.style.overflow = 'hidden';
+                };
+
+                const closeLightbox = () => {
+                    lightboxOpen.value = false;
+                    document.body.style.overflow = 'auto';
+                };
+
+                const prevImage = () => {
+                    if (lightboxIndex.value > 0) lightboxIndex.value--;
+                };
+
+                const nextImage = () => {
+                    if (lightboxIndex.value < gallery.value.length - 1) lightboxIndex.value++;
+                };
+
+                const JSONBIN_MASTER_KEY = '$2a$10$jgvkvOS.3BLaRtRrL9f59.0L9wsb880DPE4VsekjqwitSV2sW4HCS';
+                const JSONBIN_BIN_ID = ''; // O ID do seu Bin (ex: 652abc123e234...) — Deixe VAZIO para CRIAR o primeiro bin automaticamente!
+
+                const rsvp = ref({
+                    name: '',
+                    phone: '',
+                    attending: '',
+                    message: ''
+                });
+
+                const submitting = ref(false);
+                const submitted = ref(false);
+                const submitError = ref('');
+                const newBinId = ref('');
+
+                const attendingLabel = (value) => ({
+                    yes: '✅ Confirmado - Sim',
+                    no: '❌ Não vai - Não',
+                    maybe: '❓ Talvez'
+                })[value] || value;
+
+                const JSONBIN_HEADERS = () => ({
+                    'X-Master-Key': JSONBIN_MASTER_KEY,
+                    'Content-Type': 'application/json',
+                    'X-Bin-Private': 'false'
+                });
+
+                const createBin = async (initialData) => {
+                    const res = await fetch('https://api.jsonbin.io/v3/b', {
+                        method: 'POST',
+                        headers: {
+                            ...JSONBIN_HEADERS(),
+                            'X-Bin-Name': 'Aniversario-da-Cris-RSVPs'
+                        },
+                        body: JSON.stringify({ rsvps: initialData })
+                    });
+                    if (!res.ok) throw new Error(`Erro ao criar bin: HTTP ${res.status}`);
+                    const json = await res.json();
+                    return json.metadata ? json.metadata.id : null;
+                };
+
+                const readBin = async (binId) => {
+                    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                        method: 'GET',
+                        headers: JSONBIN_HEADERS()
+                    });
+                    if (!res.ok) throw new Error(`Erro ao ler bin: HTTP ${res.status}`);
+                    const json = await res.json();
+                    return json.record || { rsvps: [] };
+                };
+
+                const updateBin = async (binId, data) => {
+                    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                        method: 'PUT',
+                        headers: JSONBIN_HEADERS(),
+                        body: JSON.stringify(data)
+                    });
+                    if (!res.ok) throw new Error(`Erro ao atualizar bin: HTTP ${res.status}`);
+                    return await res.json();
+                };
+
+                const saveRsvpJsonBin = async (entry) => {
+                    if (!JSONBIN_MASTER_KEY) {
+                        throw new Error('Chave mestra do JSONBin não configurada.');
+                    }
+                    const entryFormatted = {
+                        id: entry.id,
+                        Nome: entry.name,
+                        Telefone: entry.phone,
+                        Presenca: attendingLabel(entry.attending),
+                        PresencaRaw: entry.attending,
+                        Mensagem: entry.message || '(sem mensagem)',
+                        Data: new Date(entry.createdAt).toLocaleString('pt-BR'),
+                        DataISO: entry.createdAt
+                    };
+
+                    if (!JSONBIN_BIN_ID) {
+                        const binId = await createBin([entryFormatted]);
+                        newBinId.value = binId;
+                        console.log('%c🆕 NOVO BIN CRIADO! Copie este ID:',
+                            'background:#f59e0b;color:#000;font-size:16px;padding:6px 12px;border-radius:6px;');
+                        console.log('%c' + binId,
+                            'background:#111827;color:#fcd34d;font-size:22px;font-weight:bold;padding:8px 14px;border-radius:6px;');
+                        console.log('%cAgora cole este ID na variável JSONBIN_BIN_ID em index.html E convidados.html!',
+                            'background:#dc2626;color:#fff;font-size:14px;padding:6px 10px;border-radius:6px;');
+                        return { createdNewBin: true, binId };
+                    }
+                    const record = await readBin(JSONBIN_BIN_ID);
+                    const current = Array.isArray(record.rsvps) ? record.rsvps : [];
+                    current.push(entryFormatted);
+                    await updateBin(JSONBIN_BIN_ID, { rsvps: current });
+                    return { ok: true };
+                };
+
+                const submitRsvp = async () => {
+                    if (!rsvp.value.attending) {
+                        alert('Por favor, selecione se você vai comparecer!');
+                        return;
+                    }
+                    submitting.value = true;
+                    submitError.value = '';
+                    newBinId.value = '';
+                    const entry = {
+                        id: Date.now(),
+                        name: rsvp.value.name.trim(),
+                        phone: rsvp.value.phone.trim(),
+                        attending: rsvp.value.attending,
+                        message: rsvp.value.message.trim(),
+                        createdAt: new Date().toISOString()
+                    };
+                    try {
+                        const result = await saveRsvpJsonBin(entry);
+                        submitted.value = true;
+                        if (result && result.createdNewBin) {
+                            submitError.value = '⚠️ Primeiro envio: Bin criado! Veja o ID no console F12 e cole nos arquivos.';
+                        }
+                    } catch (err) {
+                        console.error('[RSVP] Falhou:', err);
+                        submitError.value = err.message + ' — Verifique a conexão ou contate o anfitrião.';
+                    } finally {
+                        submitting.value = false;
+                    }
+                };
+
+                const resetRsvp = () => {
+                    rsvp.value = { name: '', phone: '', attending: '', message: '' };
+                    submitted.value = false;
+                    submitError.value = '';
+                    newBinId.value = '';
+                };
+
+                const openMaps = () => {
+                    window.open('https://www.google.com/maps/search/?api=1&query=Rua+das+Flores+123+Jardim+Primavera', '_blank');
+                };
+
+                onMounted(() => {
+                    updateCountdown();
+                    countdownInterval = setInterval(updateCountdown, 1000);
+                    createConfetti();
+                    if (JSONBIN_MASTER_KEY && !JSONBIN_BIN_ID) {
+                        console.log('%c⚠️ JSONBIN_BIN_ID está vazio.',
+                            'background:#f59e0b;color:#000;font-size:14px;padding:6px 10px;border-radius:6px;');
+                        console.log('Quando o primeiro RSVP for enviado, o BIN será criado automaticamente e o ID aparecerá aqui.');
+                    }
+                });
+
+                onUnmounted(() => {
+                    if (countdownInterval) clearInterval(countdownInterval);
+                });
+
+                return {
+                    countdown,
+                    confetti,
+                    gallery,
+                    lightboxOpen,
+                    lightboxIndex,
+                    openLightbox,
+                    closeLightbox,
+                    prevImage,
+                    nextImage,
+                    rsvp,
+                    submitting,
+                    submitted,
+                    submitError,
+                    newBinId,
+                    submitRsvp,
+                    resetRsvp,
+                    openMaps
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
