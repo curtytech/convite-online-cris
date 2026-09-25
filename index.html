@@ -185,7 +185,7 @@
                         </div>
                         <div>
                             <h3 class="font-bold text-lg text-amber-300 mb-1">Bebidas</h3>
-                            <p class="text-gray-300 font-semibold">As bebeidas não alcolicas são por minha conta!</p>
+                            <p class="text-gray-300 font-semibold">As bebidas não alcolicas são por minha conta!</p>
                             <p class="text-gray-300 ">Caso for beber bebidas alcolicas favor levar</p>
                         </div>
                     </div>
@@ -443,8 +443,9 @@
                     if (lightboxIndex.value < gallery.value.length - 1) lightboxIndex.value++;
                 };
 
-                const JSONBIN_MASTER_KEY = '$2a$10$jgvkvOS.3BLaRtRrL9f59.0L9wsb880DPE4VsekjqwitSV2sW4HCS';
-                const JSONBIN_BIN_ID = ''; // O ID do seu Bin (ex: 652abc123e234...) — Deixe VAZIO para CRIAR o primeiro bin automaticamente!
+                const API_BASE = 'https://onlinestorage.you.tec.br/api';
+                const STORAGE_BUCKET = 'aniversario-cris';
+                const STORAGE_KEY = 'rsvps';
 
                 const rsvp = ref({
                     name: '',
@@ -456,7 +457,6 @@
                 const submitting = ref(false);
                 const submitted = ref(false);
                 const submitError = ref('');
-                const newBinId = ref('');
 
                 const attendingLabel = (value) => ({
                     yes: '✅ Confirmado - Sim',
@@ -464,50 +464,38 @@
                     maybe: '❓ Talvez'
                 })[value] || value;
 
-                const JSONBIN_HEADERS = () => ({
-                    'X-Master-Key': JSONBIN_MASTER_KEY,
-                    'Content-Type': 'application/json',
-                    'X-Bin-Private': 'false'
-                });
+                const readStorage = async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/getkey/${encodeURIComponent(STORAGE_BUCKET)}/${encodeURIComponent(STORAGE_KEY)}`, {
+                            method: 'GET',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        if (res.status === 404) return { rsvps: [] };
+                        if (!res.ok) throw new Error(`HTTP ${res.status} ao ler dados.`);
+                        const json = await res.json();
+                        const value = json && json.value ? json.value : [];
+                        return { rsvps: Array.isArray(value) ? value : [] };
+                    } catch (err) {
+                        if (err.message && err.message.includes('404')) return { rsvps: [] };
+                        throw err;
+                    }
+                };
 
-                const createBin = async (initialData) => {
-                    const res = await fetch('https://api.jsonbin.io/v3/b', {
+                const writeStorage = async (data) => {
+                    const res = await fetch(`${API_BASE}/`, {
                         method: 'POST',
-                        headers: {
-                            ...JSONBIN_HEADERS(),
-                            'X-Bin-Name': 'Aniversario-da-Cris-RSVPs'
-                        },
-                        body: JSON.stringify({ rsvps: initialData })
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            bucket: STORAGE_BUCKET,
+                            key: STORAGE_KEY,
+                            value: data
+                        })
                     });
-                    if (!res.ok) throw new Error(`Erro ao criar bin: HTTP ${res.status}`);
-                    const json = await res.json();
-                    return json.metadata ? json.metadata.id : null;
-                };
-
-                const readBin = async (binId) => {
-                    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-                        method: 'GET',
-                        headers: JSONBIN_HEADERS()
-                    });
-                    if (!res.ok) throw new Error(`Erro ao ler bin: HTTP ${res.status}`);
-                    const json = await res.json();
-                    return json.record || { rsvps: [] };
-                };
-
-                const updateBin = async (binId, data) => {
-                    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-                        method: 'PUT',
-                        headers: JSONBIN_HEADERS(),
-                        body: JSON.stringify(data)
-                    });
-                    if (!res.ok) throw new Error(`Erro ao atualizar bin: HTTP ${res.status}`);
+                    if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar dados.`);
                     return await res.json();
                 };
 
-                const saveRsvpJsonBin = async (entry) => {
-                    if (!JSONBIN_MASTER_KEY) {
-                        throw new Error('Chave mestra do JSONBin não configurada.');
-                    }
+                const saveRsvpStorage = async (entry) => {
                     const entryFormatted = {
                         id: entry.id,
                         Nome: entry.name,
@@ -519,21 +507,10 @@
                         DataISO: entry.createdAt
                     };
 
-                    if (!JSONBIN_BIN_ID) {
-                        const binId = await createBin([entryFormatted]);
-                        newBinId.value = binId;
-                        console.log('%c🆕 NOVO BIN CRIADO! Copie este ID:',
-                            'background:#f59e0b;color:#000;font-size:16px;padding:6px 12px;border-radius:6px;');
-                        console.log('%c' + binId,
-                            'background:#111827;color:#fcd34d;font-size:22px;font-weight:bold;padding:8px 14px;border-radius:6px;');
-                        console.log('%cAgora cole este ID na variável JSONBIN_BIN_ID em index.html E convidados.html!',
-                            'background:#dc2626;color:#fff;font-size:14px;padding:6px 10px;border-radius:6px;');
-                        return { createdNewBin: true, binId };
-                    }
-                    const record = await readBin(JSONBIN_BIN_ID);
+                    const record = await readStorage();
                     const current = Array.isArray(record.rsvps) ? record.rsvps : [];
                     current.push(entryFormatted);
-                    await updateBin(JSONBIN_BIN_ID, { rsvps: current });
+                    await writeStorage(current);
                     return { ok: true };
                 };
 
@@ -544,7 +521,6 @@
                     }
                     submitting.value = true;
                     submitError.value = '';
-                    newBinId.value = '';
                     const entry = {
                         id: Date.now(),
                         name: rsvp.value.name.trim(),
@@ -554,11 +530,8 @@
                         createdAt: new Date().toISOString()
                     };
                     try {
-                        const result = await saveRsvpJsonBin(entry);
+                        await saveRsvpStorage(entry);
                         submitted.value = true;
-                        if (result && result.createdNewBin) {
-                            submitError.value = '⚠️ Primeiro envio: Bin criado! Veja o ID no console F12 e cole nos arquivos.';
-                        }
                     } catch (err) {
                         console.error('[RSVP] Falhou:', err);
                         submitError.value = err.message + ' — Verifique a conexão ou contate o anfitrião.';
@@ -571,7 +544,6 @@
                     rsvp.value = { name: '', phone: '', attending: '', message: '' };
                     submitted.value = false;
                     submitError.value = '';
-                    newBinId.value = '';
                 };
 
                 const openMaps = () => {
@@ -582,11 +554,6 @@
                     updateCountdown();
                     countdownInterval = setInterval(updateCountdown, 1000);
                     createConfetti();
-                    if (JSONBIN_MASTER_KEY && !JSONBIN_BIN_ID) {
-                        console.log('%c⚠️ JSONBIN_BIN_ID está vazio.',
-                            'background:#f59e0b;color:#000;font-size:14px;padding:6px 10px;border-radius:6px;');
-                        console.log('Quando o primeiro RSVP for enviado, o BIN será criado automaticamente e o ID aparecerá aqui.');
-                    }
                 });
 
                 onUnmounted(() => {
@@ -607,7 +574,6 @@
                     submitting,
                     submitted,
                     submitError,
-                    newBinId,
                     submitRsvp,
                     resetRsvp,
                     openMaps

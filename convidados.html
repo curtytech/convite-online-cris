@@ -129,16 +129,16 @@
                     <div class="flex flex-wrap items-center gap-3 text-sm">
                         <div v-if="loading" class="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-amber-500/10 text-amber-300 border-amber-500/40">
                             <i class="fas fa-spinner fa-spin"></i>
-                            <span class="font-semibold">Sincronizando com JSONBin...</span>
+                            <span class="font-semibold">Sincronizando com a nuvem...</span>
                         </div>
                         <div v-else-if="error || !configured"
                              class="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-red-500/10 text-red-400 border-red-500/40">
                             <i class="fas fa-triangle-exclamation"></i>
-                            <span class="font-semibold">{{ configured ? 'Erro de conexão' : 'Bin não configurado' }}</span>
+                            <span class="font-semibold">{{ configured ? 'Erro de conexão' : 'Armazenamento não configurado' }}</span>
                         </div>
                         <div v-else class="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-green-500/10 text-green-400 border-green-500/40">
                             <i class="fas fa-cloud-check"></i>
-                            <span class="font-semibold">Sincronizado com JSONBin ✅</span>
+                            <span class="font-semibold">Sincronizado com a nuvem ✅</span>
                         </div>
                     </div>
                     <p class="text-amber-200/60 text-sm">
@@ -225,7 +225,7 @@
 
             <footer class="text-center py-8 text-amber-200/40 border-t border-zinc-800/60">
                 <p class="font-playfair text-2xl text-amber-200/70 mb-2">Aniversário da Cris ✨</p>
-                <p class="text-sm">Made with <i class="fas fa-heart text-amber-500"></i> · Dados sincronizados via JSONBin.io</p>
+                <p class="text-sm">Made with <i class="fas fa-heart text-amber-500"></i> · Dados sincronizados via nuvem</p>
             </footer>
         </div>
     </div>
@@ -235,8 +235,9 @@
 
         createApp({
             setup() {
-                const JSONBIN_MASTER_KEY = '$2a$10$jgvkvOS.3BLaRtRrL9f59.0L9wsb880DPE4VsekjqwitSV2sW4HCS';
-                const JSONBIN_BIN_ID = ''; // O ID do seu Bin (ex: 652abc123e234...)
+                const API_BASE = 'https://onlinestorage.you.tec.br/api';
+                const STORAGE_BUCKET = 'aniversario-cris';
+                const STORAGE_KEY = 'rsvps';
 
                 const rsvps = ref([]);
                 const search = ref('');
@@ -244,12 +245,6 @@
                 const loading = ref(false);
                 const error = ref('');
                 const configured = ref(true);
-
-                const JSONBIN_HEADERS = () => ({
-                    'X-Master-Key': JSONBIN_MASTER_KEY,
-                    'Content-Type': 'application/json',
-                    'X-Bin-Private': 'false'
-                });
 
                 const mapRowToLocal = (row, idx) => {
                     const presencaRaw = (row.PresencaRaw || row.Presenca || row.presenca || '').toString().trim();
@@ -289,52 +284,57 @@
                     };
                 };
 
-                const readBin = async (binId) => {
-                    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-                        method: 'GET',
-                        headers: JSONBIN_HEADERS()
-                    });
-                    if (!res.ok) throw new Error(`HTTP ${res.status} — verifique o ID do Bin e as permissões.`);
-                    const json = await res.json();
-                    return json.record || { rsvps: [] };
+                const readStorage = async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/getkey/${encodeURIComponent(STORAGE_BUCKET)}/${encodeURIComponent(STORAGE_KEY)}`, {
+                            method: 'GET',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        if (res.status === 404) return { rsvps: [] };
+                        if (!res.ok) throw new Error(`HTTP ${res.status} — verifique a conexão com a API.`);
+                        const json = await res.json();
+                        const value = json && json.value ? json.value : [];
+                        return { rsvps: Array.isArray(value) ? value : [] };
+                    } catch (err) {
+                        if (err.message && err.message.includes('404')) return { rsvps: [] };
+                        throw err;
+                    }
                 };
 
-                const updateBin = async (binId, data) => {
-                    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-                        method: 'PUT',
-                        headers: JSONBIN_HEADERS(),
-                        body: JSON.stringify(data)
+                const writeStorage = async (data) => {
+                    const res = await fetch(`${API_BASE}/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            bucket: STORAGE_BUCKET,
+                            key: STORAGE_KEY,
+                            value: data
+                        })
                     });
-                    if (!res.ok) throw new Error(`HTTP ${res.status} ao atualizar.`);
+                    if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar.`);
                     return await res.json();
                 };
 
-                const loadRsvpsJsonBin = async () => {
-                    if (!JSONBIN_MASTER_KEY) {
-                        configured.value = false;
-                        error.value = 'Chave mestra do JSONBin não configurada.';
-                        rsvps.value = [];
-                        return;
-                    }
-                    if (!JSONBIN_BIN_ID) {
-                        configured.value = false;
-                        error.value = 'JSONBIN_BIN_ID vazio. Envie o primeiro RSVP pelo site para criar o Bin automaticamente, depois copie o ID aqui.';
-                        rsvps.value = [];
-                        console.log('%c⚠️ JSONBIN_BIN_ID vazio.',
-                            'background:#f59e0b;color:#000;font-size:14px;padding:6px 10px;border-radius:6px;');
-                        console.log('Passos: 1) Abra index.html → envie um RSVP teste. 2) Abra F12 Console → copie o ID do Bin criado. 3) Cole o ID em JSONBIN_BIN_ID aqui em convidados.html e também em index.html.');
-                        return;
-                    }
+                const deleteStorageKey = async () => {
+                    const res = await fetch(`${API_BASE}/deletekey/${encodeURIComponent(STORAGE_BUCKET)}/${encodeURIComponent(STORAGE_KEY)}`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    if (!res.ok) throw new Error(`HTTP ${res.status} ao apagar.`);
+                    return await res.json();
+                };
+
+                const loadRsvps = async () => {
                     configured.value = true;
                     loading.value = true;
                     error.value = '';
                     try {
-                        const record = await readBin(JSONBIN_BIN_ID);
+                        const record = await readStorage();
                         const list = Array.isArray(record.rsvps) ? record.rsvps : [];
                         rsvps.value = list.map(mapRowToLocal);
                     } catch (err) {
-                        console.error('[JSONBin] Erro ao carregar:', err);
-                        error.value = err.message || 'Falha na conexão com JSONBin.io.';
+                        console.error('[Storage] Erro ao carregar:', err);
+                        error.value = err.message || 'Falha na conexão com a API.';
                         rsvps.value = [];
                     } finally {
                         loading.value = false;
@@ -342,11 +342,10 @@
                 };
 
                 const saveBackRsvps = async (listRaw) => {
-                    if (!JSONBIN_BIN_ID) throw new Error('Bin ID não configurado.');
-                    await updateBin(JSONBIN_BIN_ID, { rsvps: listRaw });
+                    await writeStorage(listRaw);
                 };
 
-                const refreshData = () => loadRsvpsJsonBin();
+                const refreshData = () => loadRsvps();
 
                 const stats = computed(() => ({
                     total: rsvps.value.length,
@@ -399,14 +398,14 @@
                 };
 
                 const deleteRsvp = async (guest) => {
-                    if (!confirm('Deseja realmente remover este convidado do JSONBin?')) return;
+                    if (!confirm('Deseja realmente remover este convidado?')) return;
                     loading.value = true;
                     try {
-                        const record = await readBin(JSONBIN_BIN_ID);
+                        const record = await readStorage();
                         const list = Array.isArray(record.rsvps) ? record.rsvps : [];
                         const filtered = list.filter(r => String(r.id) !== String(guest.id) && r.Nome !== guest.name);
                         await saveBackRsvps(filtered);
-                        await loadRsvpsJsonBin();
+                        await loadRsvps();
                     } catch (err) {
                         console.error(err);
                         error.value = err.message || 'Falha ao remover convidado.';
@@ -415,12 +414,12 @@
                 };
 
                 const clearAll = async () => {
-                    if (!confirm('Deseja APAGAR TODAS as confirmações do JSONBin? Esta ação NÃO pode ser desfeita!')) return;
+                    if (!confirm('Deseja APAGAR TODAS as confirmações? Esta ação NÃO pode ser desfeita!')) return;
                     if (!confirm('Tem CERTEZA ABSOLUTA? Todos os RSVPs serão perdidos!')) return;
                     loading.value = true;
                     try {
-                        await saveBackRsvps([]);
-                        await loadRsvpsJsonBin();
+                        await deleteStorageKey();
+                        await loadRsvps();
                     } catch (err) {
                         console.error(err);
                         error.value = err.message || 'Falha ao limpar dados.';
@@ -459,7 +458,7 @@
                     URL.revokeObjectURL(url);
                 };
 
-                onMounted(() => loadRsvpsJsonBin());
+                onMounted(() => loadRsvps());
 
                 return {
                     rsvps,
