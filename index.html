@@ -617,3 +617,62 @@
     </script>
 </body>
 </html>
+                }
+                    } catch (err) {
+                        console.error('[RSVP] Falhou:', err);
+                        submitError.value = err.message + ' — Verifique a conexão ou contate o anfitrião.';
+                    } finally {
+                        submitting.value = false;
+                    }
+                };
+
+                const resetRsvp = () => {
+                    rsvp.value = { name: '', phone: '', attending: '', message: '' };
+                    submitted.value = false;
+                    submitError.value = '';
+                    newBinId.value = '';
+                };
+
+                const openMaps = () => {
+                    window.open('https://maps.app.goo.gl/8mqjpHCXkxP9h1jM8', '_blank');
+                };
+
+                onMounted(() => {
+                    updateCountdown();
+                    countdownInterval = setInterval(updateCountdown, 1000);
+                    createConfetti();
+                    if (JSONBIN_MASTER_KEY && !JSONBIN_BIN_ID) {
+                        console.log('%c⚠️ JSONBIN_BIN_ID está vazio.',
+                            'background:#f59e0b;color:#000;font-size:14px;padding:6px 10px;border-radius:6px;');
+                        console.log('Quando o primeiro RSVP for enviado, o BIN será criado automaticamente e o ID aparecerá aqui.');
+                    }
+                });
+
+                onUnmounted(() => {
+                    if (countdownInterval) clearInterval(countdownInterval);
+                });
+
+                return {
+                    countdown,
+                    confetti,
+                    gallery,
+                    lightboxOpen,
+                    lightboxIndex,
+                    openLightbox,
+                    closeLightbox,
+                    prevImage,
+                    nextImage,
+                    rsvp,
+                    submitting,
+                    submitted,
+                    submitError,
+                    newBinId,
+                    submitRsvp,
+                    resetRsvp,
+                    openMaps
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
