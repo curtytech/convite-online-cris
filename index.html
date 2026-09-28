@@ -509,6 +509,10 @@
                     if (lightboxIndex.value < gallery.value.length - 1) lightboxIndex.value++;
                 };
 
+                const API_BASE = 'https://onlinestorage.you.tec.br/api';
+                const STORAGE_BUCKET = 'convite-online-cris';
+                const STORAGE_KEY = 'convites';
+
                 const form = ref({
                     name: '',
                     phone: '',
@@ -519,16 +523,52 @@
                 const submitting = ref(false);
                 const submitted = ref(false);
                 const submitError = ref('');
-                const newBinId = ref('');
 
                 const attendingLabel = (value) => ({
-                    true: '✅ Confirmado - Sim',
-                    false: '❌ Não vai - Não'
+                    yes: '✅ Confirmado - Sim',
+                    no: '❌ Não vai - Não',
+                    maybe: '❓ Talvez'
                 })[value] || value;
 
-                const API_HEADERS = () => ({
-                    'Content-Type': 'application/json',
-                });
+                const readStorage = async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/getkey/${encodeURIComponent(STORAGE_BUCKET)}/${encodeURIComponent(STORAGE_KEY)}`, {
+                            method: 'GET',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        if (res.status === 404) return [];
+                        if (!res.ok) throw new Error(`HTTP ${res.status} ao ler dados.`);
+                        const json = await res.json();
+                        let value = json && json.value ? json.value : [];
+                        if (typeof value === 'string') {
+                            try { value = JSON.parse(value); } catch (e) { value = []; }
+                        }
+                        if (Array.isArray(value)) return value;
+                        if (value && typeof value === 'object') return [value];
+                        return [];
+                    } catch (err) {
+                        if (err.message && err.message.includes('404')) return [];
+                        throw err;
+                    }
+                };
+
+                const writeStorage = async (data) => {
+                    const res = await fetch(`${API_BASE}/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            bucket: STORAGE_BUCKET,
+                            key: STORAGE_KEY,
+                            value: data
+                        })
+                    });
+                    if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar dados.`);
+                    const json = await res.json();
+                    if (!json || (json.success !== undefined && json.success === false)) {
+                        throw new Error('API respondeu mas salvamento sem sucesso.');
+                    }
+                    return json;
+                };
 
                 const submitForm = async () => {
                     if (!form.value.attending) {
@@ -537,9 +577,8 @@
                     }
                     submitting.value = true;
                     submitError.value = '';
-                    newBinId.value = '';
                     const entry = {
-                        id: 1,
+                        id: Date.now(),
                         name: form.value.name.trim(),
                         phone: form.value.phone.trim(),
                         attending: form.value.attending,
@@ -547,25 +586,11 @@
                         createdAt: new Date().toISOString()
                     };
 
-                    const body =
-                    {
-                        "bucket": "convite-online-cris",
-                        "key": "convites",
-                        "value": JSON.stringify(entry)
-                    }
-
                     try {
-                        const result = await fetch('https://onlinestorage/api/', {
-                            method: 'POST',
-                            headers: API_HEADERS(),
-                            body: JSON.stringify(body)
-                        });
-                        const data = await result.json();
-                        console.log(data);
+                        const current = await readStorage();
+                        current.push(entry);
+                        await writeStorage(current);
                         submitted.value = true;
-                        if (data && data.createdNewBin) {
-                            submitError.value = '⚠️ Envio realizado com sucesso!.';
-                        }
                     } catch (err) {
                         console.error('[FORM] Falhou:', err);
                         submitError.value = err.message + ' — Verifique a conexão ou contate o anfitrião.';
@@ -578,7 +603,6 @@
                     form.value = { name: '', phone: '', attending: '', message: '' };
                     submitted.value = false;
                     submitError.value = '';
-                    newBinId.value = '';
                 };
 
                 const openMaps = () => {
@@ -609,7 +633,6 @@
                     submitting,
                     submitted,
                     submitError,
-                    newBinId,
                     submitForm,
                     resetForm,
                     openMaps
